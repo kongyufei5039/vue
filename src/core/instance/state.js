@@ -47,6 +47,7 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 }
 
 export function initState (vm: Component) {
+  // 初始化一个 watcher
   vm._watchers = []
   const opts = vm.$options
   if (opts.props) initProps(vm, opts.props)
@@ -65,11 +66,11 @@ export function initState (vm: Component) {
 function initProps (vm: Component, propsOptions: Object) {
   const propsData = vm.$options.propsData || {}
   const props = vm._props = {}
-  // cache prop keys so that future props updates can iterate using Array
-  // instead of dynamic object key enumeration.
+  // 缓冲 props 的 key，以便将来 props 更新时可以使用数组而不是枚举动态对象的 key
   const keys = vm.$options._propKeys = []
   const isRoot = !vm.$parent
-  // root instance props should be converted
+  // 切换 observe 标志位
+  // root 实例的 props 应该被修改为观察对象
   if (!isRoot) {
     toggleObserving(false)
   }
@@ -98,12 +99,14 @@ function initProps (vm: Component, propsOptions: Object) {
         }
       })
     } else {
+      // 定义 props 为响应式
       defineReactive(props, key, value)
     }
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
     if (!(key in vm)) {
+      // 代理 props
       proxy(vm, `_props`, key)
     }
   }

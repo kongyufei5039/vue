@@ -6,13 +6,16 @@ import config from '../config'
 
 let uid = 0
 
+// dep 是一个可观察的对象，可以有多个指令订阅它
 /**
  * A dep is an observable that can have multiple
  * directives subscribing to it.
  */
 export default class Dep {
+  // 观察者
   static target: ?Watcher;
   id: number;
+  // 订阅者
   subs: Array<Watcher>;
 
   constructor () {

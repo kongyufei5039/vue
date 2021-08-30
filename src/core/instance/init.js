@@ -28,6 +28,7 @@ export function initMixin (Vue: Class<Component>) {
       mark(startTag)
     }
 
+    // 这个标志后面会用到
     // a flag to avoid this being observed
     vm._isVue = true
     // 合并 options
@@ -75,7 +76,7 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
-    // 如果有 el，完成挂在
+    // 如果有 el，完成挂载
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }
