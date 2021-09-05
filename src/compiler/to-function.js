@@ -48,6 +48,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
       }
     }
 
+    // 如果缓存命中，直接返回缓存
     // check cache
     const key = options.delimiters
       ? String(options.delimiters) + template

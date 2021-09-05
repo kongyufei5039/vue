@@ -57,6 +57,7 @@ let platformMustUseProp
 let platformGetTagNamespace
 let maybeComponent
 
+// HTML 元素
 export function createASTElement (
   tag: string,
   attrs: Array<ASTAttr>,

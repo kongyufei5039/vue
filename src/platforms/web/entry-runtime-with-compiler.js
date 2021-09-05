@@ -19,6 +19,7 @@ Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
+  // 获取挂载的 dom
   el = el && query(el)
 
   /* istanbul ignore if */
@@ -29,13 +30,16 @@ Vue.prototype.$mount = function (
     return this
   }
 
+  // 拿到定义的 options
   const options = this.$options
+  // 将 template 或外部 html 转换为 render 函数，通常是单文件组件中的 template
   // resolve template/el and convert to render function
   if (!options.render) {
     let template = options.template
     if (template) {
       if (typeof template === 'string') {
         if (template.charAt(0) === '#') {
+          // 如果 template 以“#”开头被认为是 id，查找 id 对应的元素作为 template
           template = idToTemplate(template)
           /* istanbul ignore if */
           if (process.env.NODE_ENV !== 'production' && !template) {
@@ -46,6 +50,7 @@ Vue.prototype.$mount = function (
           }
         }
       } else if (template.nodeType) {
+        // 如果是 HTML 节点，则通过 innerHTML 获取 dom 元素字符串作为 template
         template = template.innerHTML
       } else {
         if (process.env.NODE_ENV !== 'production') {
@@ -54,6 +59,7 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
+      // 如果 options 没有配置 template，获取 outerHTML 作为 template
       template = getOuterHTML(el)
     }
     if (template) {
@@ -62,6 +68,7 @@ Vue.prototype.$mount = function (
         mark('compile')
       }
 
+      // 编译 template 为 render 函数
       const { render, staticRenderFns } = compileToFunctions(template, {
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,

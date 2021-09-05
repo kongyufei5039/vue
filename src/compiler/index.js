@@ -5,6 +5,7 @@ import { optimize } from './optimizer'
 import { generate } from './codegen/index'
 import { createCompilerCreator } from './create-compiler'
 
+// 因为跨平台，所以这里的编译器支持自定义，这里设置一个默认的 baseCompile
 // `createCompilerCreator` allows creating compilers that use alternative
 // parser/optimizer/codegen, e.g the SSR optimizing compiler.
 // Here we just export a default compiler using the default parts.
