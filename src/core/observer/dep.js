@@ -6,10 +6,9 @@ import config from '../config'
 
 let uid = 0
 
-// dep 是一个可观察的对象，可以有多个指令订阅它
 /**
- * A dep is an observable that can have multiple
- * directives subscribing to it.
+ * dep 是一个可观察的对象，可以有多个指令订阅它，
+ * 这里的指令其实是其表达式依赖的 observer 对象
  */
 export default class Dep {
   // 观察者
@@ -37,8 +36,9 @@ export default class Dep {
     }
   }
 
+  // 通知订阅者执行更新函数
   notify () {
-    // stabilize the subscriber list first
+    // 固定订阅者列表
     const subs = this.subs.slice()
     if (process.env.NODE_ENV !== 'production' && !config.async) {
       // subs aren't sorted in scheduler if not running async
@@ -47,14 +47,15 @@ export default class Dep {
       subs.sort((a, b) => a.id - b.id)
     }
     for (let i = 0, l = subs.length; i < l; i++) {
+      // 遍历执行订阅者的 update 函数
       subs[i].update()
     }
   }
 }
 
-// The current target watcher being evaluated.
-// This is globally unique because only one watcher
-// can be evaluated at a time.
+// 当前的 target watcher 将被执行。
+// 这是 vm 全局唯一的一个 watcher，
+// 因为一次只能执行一个 watcher。
 Dep.target = null
 const targetStack = []
 

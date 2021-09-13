@@ -28,12 +28,10 @@ export function toggleObserving (value: boolean) {
   shouldObserve = value
 }
 
-// 转变为观察者对象后，getter/setter 会进行依赖收集/分发更新函数
 /**
- * Observer class that is attached to each observed
- * object. Once attached, the observer converts the target
- * object's property keys into getter/setters that
- * collect dependencies and dispatch updates.
+ * Observer 类被用来创建 observed 对象，
+ * 一但创建成功，普通对象的 property 的 getter/setter 就会被修改，
+ * 用来做依赖收集和分发更新。
  */
 export class Observer {
   value: any;
@@ -62,9 +60,7 @@ export class Observer {
   }
 
   /**
-   * Walk through all properties and convert them into
-   * getter/setters. This method should only be called when
-   * value type is Object.
+   * 遍历目标对象上的所有 property，修改每个 property 的 getter/setter。
    */
   walk (obj: Object) {
     const keys = Object.keys(obj)
@@ -75,7 +71,7 @@ export class Observer {
   }
 
   /**
-   * Observe a list of Array items.
+   * 将数组的每一项进行观察
    */
   observeArray (items: Array<any>) {
     for (let i = 0, l = items.length; i < l; i++) {
@@ -109,9 +105,9 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
 }
 
 /**
- * Attempt to create an observer instance for a value,
- * returns the new observer if successfully observed,
- * or the existing observer if the value already has one.
+ * 尝试为一个值创建一个 observer 实例，
+ * 如果被观察成功返回一个新的 observer 实例，
+ * 或者如果这个值已经被观察，则返回已存在的 observer 对象。
  */
 export function observe (value: any, asRootData: ?boolean): Observer | void {
   // 如果不是一个对象类型或者是 VNode 实例，返回
@@ -120,7 +116,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
   }
   let ob: Observer | void
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
-    // 如果已经被观察过，还用原来的观察者对象
+    // 如果已经被观察，用已存在的 observer 对象
     ob = value.__ob__
   } else if (
     shouldObserve &&
@@ -129,8 +125,8 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     Object.isExtensible(value) &&
     !value._isVue
   ) {
-    // 如果是可转变为观察对象、不是服务端渲染、是一个数组或简单对象、是一个可扩展对象，
-    // 不是一个 Vue 实例对象（src/core/instance/init.js 33），则转便为观察者对象
+    // 如果可转变为 observer 对象、不是服务端渲染、是一个数组或简单对象、是一个可扩展对象，
+    // 不是一个 Vue 实例对象（src/core/instance/init.js 33），则转变为 observer 对象
     ob = new Observer(value)
   }
   if (asRootData && ob) {
@@ -140,7 +136,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
 }
 
 /**
- * Define a reactive property on an Object.
+ * 在一个对象上定义一个 reactive property。
  */
 export function defineReactive (
   obj: Object,
@@ -149,7 +145,11 @@ export function defineReactive (
   customSetter?: ?Function,
   shallow?: boolean
 ) {
-  // 初始化一个 Dep 实例
+  /**
+   * 初始化一个 Dep 实例
+   * 这里用一个闭包保存 dep，
+   * dep 跟 observer 对象是一一对应关系
+   */
   const dep = new Dep()
 
   const property = Object.getOwnPropertyDescriptor(obj, key)
@@ -159,7 +159,7 @@ export function defineReactive (
   }
 
   // 获取 getter/setter
-  // cater for pre-defined getter/setters
+  // 给 property 预定义 getter/setters
   const getter = property && property.get
   const setter = property && property.set
   // 如果 getter/setter 其中有且仅有一个，并且参数只有 obj、key 时，给 val 赋值
@@ -177,9 +177,14 @@ export function defineReactive (
     get: function reactiveGetter () {
       // 代理 getter，也就是 obj 的属性 key 被访问的时候
       const value = getter ? getter.call(obj) : val
-      // Dep.target 实际上是一个 Watcher
+      /**
+       * Dep.target 实际上是一个 watcher
+       * watcher 实例化在 src/core/instance/lifecycle.js 的 mountComponent 方法中
+       * 这意味着第一次依赖收集的时机在 $mount 时，
+       * 而触发 getter 是在 Watcher 的构造函数中
+       */
       if (Dep.target) {
-        // 依赖收集，其实是给 Watcher 添加依赖
+        // 依赖收集，其实是给 subs 添加对应的 watcher
         dep.depend()
         if (childOb) {
           // 如果 obj 的 val 也是转变为观察者对象，则做依赖收集

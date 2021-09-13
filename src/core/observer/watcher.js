@@ -20,9 +20,8 @@ import type { SimpleSet } from '../util/index'
 let uid = 0
 
 /**
- * A watcher parses an expression, collects dependencies,
- * and fires callback when the expression value changes.
- * This is used for both the $watch() api and directives.
+ * watcher 用来解析表达式，收集依赖项，并在表达式值更改时触发回调。
+ * $watch api 和 指令都用到了它。
  */
 export default class Watcher {
   vm: Component;
@@ -76,7 +75,7 @@ export default class Watcher {
     this.expression = process.env.NODE_ENV !== 'production'
       ? expOrFn.toString()
       : ''
-    // parse expression for getter
+    // 将表达式解析为 getter，getter 最终都会被解析为一个函数
     if (typeof expOrFn === 'function') {
       this.getter = expOrFn
     } else {
@@ -91,19 +90,28 @@ export default class Watcher {
         )
       }
     }
+    /**
+     * 如果不是 lazy，执行 get
+     * get 方法的作用之一是给 vm 的 deps 添加这个
+     */ 
     this.value = this.lazy
       ? undefined
       : this.get()
   }
 
   /**
-   * Evaluate the getter, and re-collect dependencies.
+   * 执行 getter，并且重新收集依赖。
    */
   get () {
     pushTarget(this)
     let value
     const vm = this.vm
     try {
+      /**
+       * 调用 getter
+       * 在 src/core/instance/lifecycle.js 的 mountComponent 方法中，
+       * 其实是在执行实例的 render 函数，生成新的 vnode 进行 patch。
+       */
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -112,8 +120,7 @@ export default class Watcher {
         throw e
       }
     } finally {
-      // "touch" every property so they are all tracked as
-      // dependencies for deep watching
+      // 对每个 property 进行深度递归遍历，以便他们都被作为依赖追踪
       if (this.deep) {
         traverse(value)
       }
@@ -124,7 +131,7 @@ export default class Watcher {
   }
 
   /**
-   * Add a dependency to this directive.
+   * 给指令添加依赖
    */
   addDep (dep: Dep) {
     const id = dep.id
@@ -138,7 +145,7 @@ export default class Watcher {
   }
 
   /**
-   * Clean up for dependency collection.
+   * 清除依赖收集
    */
   cleanupDeps () {
     let i = this.deps.length
@@ -159,8 +166,8 @@ export default class Watcher {
   }
 
   /**
-   * Subscriber interface.
-   * Will be called when a dependency changes.
+   * 订阅者接口
+   * 当一个依赖改变时将被调用
    */
   update () {
     /* istanbul ignore else */
@@ -174,21 +181,20 @@ export default class Watcher {
   }
 
   /**
-   * Scheduler job interface.
-   * Will be called by the scheduler.
+   * 调度任务接口
+   * 将被调度者调用
    */
   run () {
     if (this.active) {
       const value = this.get()
       if (
         value !== this.value ||
-        // Deep watchers and watchers on Object/Arrays should fire even
-        // when the value is the same, because the value may
-        // have mutated.
+        // 当 watcher 是一个对象或是深度观察的，即使值相同也应该调用回调函数，
+        // 因为内部的值可能已经变了
         isObject(value) ||
         this.deep
       ) {
-        // set new value
+        // 设置一个新值
         const oldValue = this.value
         this.value = value
         if (this.user) {
@@ -202,8 +208,8 @@ export default class Watcher {
   }
 
   /**
-   * Evaluate the value of the watcher.
-   * This only gets called for lazy watchers.
+   * 获取 watcher 的值
+   * 仅在 lazy watcher 时被调用
    */
   evaluate () {
     this.value = this.get()
@@ -213,6 +219,9 @@ export default class Watcher {
   /**
    * Depend on all deps collected by this watcher.
    */
+  /**
+   * 给这个 watcher 收集 Depend 收集的所有依赖
+   */
   depend () {
     let i = this.deps.length
     while (i--) {
@@ -221,13 +230,12 @@ export default class Watcher {
   }
 
   /**
-   * Remove self from all dependencies' subscriber list.
+   * 从所有的订阅者列表移除自己这个 watcher
    */
   teardown () {
     if (this.active) {
-      // remove self from vm's watcher list
-      // this is a somewhat expensive operation so we skip it
-      // if the vm is being destroyed.
+      // 从订阅者列表移除自己
+      // 如果 vm 已经被销毁，这是比较昂贵的操作，所以我们跳过它
       if (!this.vm._isBeingDestroyed) {
         remove(this.vm._watchers, this)
       }

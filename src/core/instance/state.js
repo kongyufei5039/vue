@@ -47,7 +47,7 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 }
 
 export function initState (vm: Component) {
-  // 初始化一个 watcher
+  // 初始化一个内部 watchers
   vm._watchers = []
   const opts = vm.$options
   if (opts.props) initProps(vm, opts.props)
@@ -102,11 +102,9 @@ function initProps (vm: Component, propsOptions: Object) {
       // 定义 props 为响应式
       defineReactive(props, key, value)
     }
-    // static props are already proxied on the component's prototype
-    // during Vue.extend(). We only need to proxy props defined at
-    // instantiation here.
+    // 在 Vue.extend() 期间，静态 props 已经被代理在组件的 prototype 上
+    // 在这里我们仅需要代理实例化时的 props
     if (!(key in vm)) {
-      // 代理 props
       proxy(vm, `_props`, key)
     }
   }
@@ -126,7 +124,7 @@ function initData (vm: Component) {
       vm
     )
   }
-  // proxy data on instance
+  // 代理在实例上的 data
   const keys = Object.keys(data)
   const props = vm.$options.props
   const methods = vm.$options.methods
@@ -151,7 +149,7 @@ function initData (vm: Component) {
       proxy(vm, `_data`, key)
     }
   }
-  // observe data
+  // observe data，变成响应式数据
   observe(data, true /* asRootData */)
 }
 
@@ -173,7 +171,7 @@ const computedWatcherOptions = { lazy: true }
 function initComputed (vm: Component, computed: Object) {
   // $flow-disable-line
   const watchers = vm._computedWatchers = Object.create(null)
-  // computed properties are just getters during SSR
+  // 在 SSR 期间，computed 的 properties 只有 getter
   const isSSR = isServerRendering()
 
   for (const key in computed) {
@@ -187,7 +185,7 @@ function initComputed (vm: Component, computed: Object) {
     }
 
     if (!isSSR) {
-      // create internal watcher for the computed property.
+      // 为 computed property 创建内部的 watcher
       watchers[key] = new Watcher(
         vm,
         getter || noop,
@@ -196,9 +194,8 @@ function initComputed (vm: Component, computed: Object) {
       )
     }
 
-    // component-defined computed properties are already defined on the
-    // component prototype. We only need to define computed properties defined
-    // at instantiation here.
+    // 组件定义的 computed properties 已经定义在了组件的 prototype 上。
+    // 这里我们仅需要定义实例化时定义的 computed properties
     if (!(key in vm)) {
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
