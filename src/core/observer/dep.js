@@ -11,10 +11,9 @@ let uid = 0
  * 这里的指令其实是其表达式依赖的 observer 对象
  */
 export default class Dep {
-  // 观察者
   static target: ?Watcher;
   id: number;
-  // 订阅者
+  // 订阅者列表
   subs: Array<Watcher>;
 
   constructor () {
@@ -36,7 +35,6 @@ export default class Dep {
     }
   }
 
-  // 通知订阅者执行更新函数
   notify () {
     // 固定订阅者列表
     const subs = this.subs.slice()
@@ -47,7 +45,7 @@ export default class Dep {
       subs.sort((a, b) => a.id - b.id)
     }
     for (let i = 0, l = subs.length; i < l; i++) {
-      // 遍历执行订阅者的 update 函数
+      // 遍历执行 watcher 的 update 函数
       subs[i].update()
     }
   }

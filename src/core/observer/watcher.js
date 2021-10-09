@@ -92,7 +92,7 @@ export default class Watcher {
     }
     /**
      * 如果不是 lazy，执行 get
-     * get 方法的作用之一是给 vm 的 deps 添加这个
+     * get 方法的作用之一是给 vm 的 deps 添加这个 watcher
      */ 
     this.value = this.lazy
       ? undefined

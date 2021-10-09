@@ -147,8 +147,7 @@ export function defineReactive (
 ) {
   /**
    * 初始化一个 Dep 实例
-   * 这里用一个闭包保存 dep，
-   * dep 跟 observer 对象是一一对应关系
+   * 这里用一个闭包保存 dep
    */
   const dep = new Dep()
 
@@ -162,7 +161,7 @@ export function defineReactive (
   // 给 property 预定义 getter/setters
   const getter = property && property.get
   const setter = property && property.set
-  // 如果 getter/setter 其中有且仅有一个，并且参数只有 obj、key 时，给 val 赋值
+  // 如果没有 getter 或者有 setter，并且参数只有 obj、key 时，将值赋给 val
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key]
   }
@@ -217,7 +216,7 @@ export function defineReactive (
       }
       // 如果新值是对象，则转变为观察者对象
       childOb = !shallow && observe(newVal)
-      // 通知订阅者，触发更新
+      // 通知依赖项，触发更新
       dep.notify()
     }
   })
